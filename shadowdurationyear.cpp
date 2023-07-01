@@ -37,7 +37,19 @@ void ShadowDurationYear::on_pushButton_clicked()
 
 void ShadowDurationYear::on_pushButton_2_clicked()
 {
+    OneDayGSO oneDay;
+    oneDay.setSunAngle(0.0133); // Заменить
 
+    // Значения для апоцентра и перицентра
+    double apoapsis = 36000;
+    double periapsis = 400;
+
+    // Вызов функции и вывод результата
+    double shadowDuration = oneDay.CountShadowDurationByOrbitHeight(apoapsis, periapsis);
+    QString text = QString("%1 секунд").arg(shadowDuration);
+        ui->lineEdit_2->setText(text);
+//    qDebug() << "Shadow duration for orbit height " << (apoapsis + periapsis) / 2 << ": " << shadowDuration;
+//    ui->lineEdit_2->setText(QString::number(shadowDuration));
 }
 
 /*
