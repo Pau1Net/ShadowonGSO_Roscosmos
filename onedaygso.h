@@ -20,6 +20,11 @@ class OneDayGSO
 public:
     OneDayGSO();
     double CountShadowDuration(QDate);
+    double CountShadowDurationByOrbitHeight(double apoapsis, double periapsis);
+    void setSunAngle(double angle) { sunAngle = angle; }
+
+private:
+    double sunAngle;
 };
 
 #endif // ONEDAYGSO_H
