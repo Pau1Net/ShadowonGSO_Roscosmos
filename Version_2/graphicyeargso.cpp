@@ -55,7 +55,6 @@ void GraphicYearGSO::DrawGraphic(int degrees, double i, double o)
     ynum.setTime(timebegin);
     double ybegin = ynum.toTime_t() - 14*3600; //14 для начала от 00:00
 
-
     double yend = ybegin+86400;
 
     QSharedPointer<QCPAxisTickerDateTime> timeTicker(new QCPAxisTickerDateTime);
@@ -66,63 +65,46 @@ void GraphicYearGSO::DrawGraphic(int degrees, double i, double o)
 
     double* result = CalcShadowDuration(i, o);
     int daysInYear = StartingDate.daysInYear();
-    int daysShadow = 0;
 
-    //посчитать кол-во дней с тенью
-    for(int i = 0; i < daysInYear; i++)
-    {
-        if (result[i] != -1) daysShadow++;
-    }
-
-    int daysShadowSpring = 0;
-    for (int i = 0; i< daysInYear/2 ; i++)
-    {
-        if (result[i] != -1) daysShadowSpring++;
-    }
-
-    QVector<QCPGraphData> ShadowGrowSpring(daysShadow), ShadowWeakSpring(daysShadow);
-
-    int daysShadowAutumn = 0;
-    for (int i = daysInYear/2 ; i< daysInYear; i++)
-    {
-        if (result[i] != -1) daysShadowAutumn++;
-    }
-
-    QVector<QCPGraphData> ShadowGrowAutumn(daysShadow), ShadowWeakAutumn(daysShadow);
+    QVector<QCPGraphData> ShadowGrowSpring(daysInYear), ShadowWeakSpring(daysInYear);
+    QVector<QCPGraphData> ShadowGrowAutumn(daysInYear), ShadowWeakAutumn(daysInYear);
 
     int curtime = (degrees-45)/15; //московское время
     double time = 3600*curtime;
 
-    int days = 0; //для счета дней daysShadow
-
     for (int i=0; i < daysInYear/2 ;i++)
     {
+        ShadowGrowSpring[i].key = xbegin + 86400*i;
+        ShadowWeakSpring[i].key = xbegin + 86400*i;
+
         if (result[i] != -1)
         {
             double znachkey;
             znachkey = ybegin + time + result[i]/2;
             if (znachkey < ybegin)
             {
-                ShadowGrowSpring[days].value = yend + time + result[i]/2;
+                ShadowGrowSpring[i].value = yend + time + result[i]/2;
             }
-            else ShadowGrowSpring[days].value = ybegin + time + result[i]/2;
-            ShadowGrowSpring[days].key = xbegin + 86400*i;
+            else ShadowGrowSpring[i].value = ybegin + time + result[i]/2;
 
             znachkey = ybegin + time - result[i]/2;
             if (znachkey < ybegin)
             {
-                ShadowWeakSpring[days].value = yend + time - result[i]/2;
+                ShadowWeakSpring[i].value = yend + time - result[i]/2;
             }
-            else ShadowWeakSpring[days].value = ybegin + time - result[i]/2;
-            ShadowWeakSpring[days].key = xbegin + 86400*i;
-
-            days++;
+            else ShadowWeakSpring[i].value = ybegin + time - result[i]/2;
+        }
+        else
+        {
+            ShadowGrowSpring[i].value = qQNaN();
+            ShadowWeakSpring[i].value = qQNaN();
         }
     }
 
-    days = 0;
-    for (int i=daysInYear/2 - 1; i < daysInYear;i++)
+    for (int i=daysInYear/2; i < daysInYear;i++)
     {
+        ShadowGrowAutumn[i].key = xbegin + 86400*i;
+        ShadowWeakAutumn[i].key = xbegin + 86400*i;
 
         if (result[i] != -1)
         {
@@ -130,41 +112,24 @@ void GraphicYearGSO::DrawGraphic(int degrees, double i, double o)
             znachkey = ybegin + time + result[i]/2;
             if (znachkey < ybegin)
             {
-                ShadowGrowAutumn[days].value = yend + time + result[i]/2;
-
+                ShadowGrowAutumn[i].value = yend + time + result[i]/2;
             }
-            else ShadowGrowAutumn[days].value = ybegin + time + result[i]/2;
-            ShadowGrowAutumn[days].key = xbegin + 86400*i;
+            else ShadowGrowAutumn[i].value = ybegin + time + result[i]/2;
 
             znachkey = ybegin + time - result[i]/2;
             if (znachkey < ybegin)
             {
-                ShadowWeakAutumn[days].value = yend + time - result[i]/2;
-
-            } else ShadowWeakAutumn[days].value = ybegin + time - result[i]/2;
-
-            ShadowWeakAutumn[days].key = xbegin + 86400*i;
-            days++;
+                ShadowWeakAutumn[i].value = yend + time - result[i]/2;
+            }
+            else ShadowWeakAutumn[i].value = ybegin + time - result[i]/2;
+        }
+        else
+        {
+            ShadowGrowAutumn[i].value = qQNaN();
+            ShadowWeakAutumn[i].value = qQNaN();
         }
     }
-//    ui->widget->rescaleAxes();
 
-
-//    ui->widget->clearGraphs();
-
-//    ui->widget->addGraph();
-//    ui->widget->graph(0)->setPen(QPen(Qt::red));
-//    ui->widget->graph(0)->data()->set(ShadowGrowSpring);
-//    ui->widget->addGraph();
-//    ui->widget->graph(1)->setPen(QPen(Qt::blue));
-//    ui->widget->graph(1)->data()->set(ShadowWeakSpring);
-
-//    ui->widget->addGraph();
-//    ui->widget->graph(2)->setPen(QPen(Qt::red));
-//    ui->widget->graph(2)->data()->set(ShadowGrowAutumn);
-//    ui->widget->addGraph();
-//    ui->widget->graph(3)->setPen(QPen(Qt::blue));
-//    ui->widget->graph(3)->data()->set(ShadowWeakAutumn);
 
     //для отображения на одном графике используем этот код. Если нужно отображать каждый раз разный график, то в файле shadowdurationyear.cpp переместите
     //из конструктора ShadowDurationYear экземпляр GraphicYear в функцию UI.(расскоментируйте, а в конструкторе - удалите).
