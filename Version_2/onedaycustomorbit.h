@@ -2,6 +2,7 @@
 #define ONEDAYCUSTOMORBIT_H
 #include <QDate>
 #include <QTime>
+#include <QVector>
 #include <QPair>
 
 static const QDate StartingDate = QDate(2023,3,21);
